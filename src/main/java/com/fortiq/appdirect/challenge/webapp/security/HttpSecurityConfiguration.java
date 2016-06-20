@@ -20,6 +20,8 @@ public class HttpSecurityConfiguration {
                     .unprotected()
                 .forPath("/openIdLogin.xhtml")
                     .unprotected()
+                .forPath("/openIdLoginForm.xhtml")
+                    .unprotected()
                 .forPath("/openIdValidate.xhtml")
                     .unprotected();
     }

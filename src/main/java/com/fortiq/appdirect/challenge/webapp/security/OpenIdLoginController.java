@@ -27,7 +27,19 @@ public class OpenIdLoginController {
 
 	@Inject OpenIdAuthenticator openIdAuthenticator;
 	
-	public void login() {
+	public String login() {
+		AuthenticationResult result = identity.login();
+		if (AuthenticationResult.FAILED.equals(result)) {
+			facesContext.addMessage(null,
+					new FacesMessage("Error authenticating with the openid provider"));
+			return "/error.xhtml";
+		}
+		return null;
+	}
+
+	public void redirectEvent( ComponentSystemEvent cse ) {
+		String openId = (String) cse.getComponent().getAttributes().get("openid");
+		openIdAuthenticator.setOpenId(openId);
 		AuthenticationResult result = identity.login();
 		if (AuthenticationResult.FAILED.equals(result)) {
 			facesContext.addMessage(null,
@@ -41,6 +53,7 @@ public class OpenIdLoginController {
 		if (AuthenticationResult.FAILED.equals(result)) {
 			facesContext.addMessage(null,
 					new FacesMessage("Error validating the openid response"));
+			facesContext.getApplication().getNavigationHandler().handleNavigation(facesContext, null, "/error.xhtml");
 		} else {
 			facesContext.getApplication().getNavigationHandler().handleNavigation(facesContext, null, "loggedIn");
 		}
