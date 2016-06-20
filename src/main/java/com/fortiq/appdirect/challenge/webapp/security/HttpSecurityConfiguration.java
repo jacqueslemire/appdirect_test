@@ -15,12 +15,12 @@ public class HttpSecurityConfiguration {
                 .allPaths()
                     .authenticateWith()
                         .form()
-                            .loginPage("/login.jsf")
+                            .loginPage("/login.xhtml")
                 .forPath("/javax.faces.resource/*")
                     .unprotected()
-                .forPath("/openIdLogin.jsf")
+                .forPath("/openIdLogin.xhtml")
                     .unprotected()
-                .forPath("/openIdValidate.jsf")
+                .forPath("/openIdValidate.xhtml")
                     .unprotected();
     }
     
