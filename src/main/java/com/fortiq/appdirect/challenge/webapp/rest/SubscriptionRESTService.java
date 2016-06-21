@@ -16,6 +16,9 @@
  */
 package com.fortiq.appdirect.challenge.webapp.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -31,6 +34,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import oauth.signpost.OAuth;
@@ -67,7 +71,7 @@ public class SubscriptionRESTService {
 	        getOAuthConsumer().sign(request);
 	        request.connect();
 	        log.info( request.getHeaderFields() );
-	        eventContent = request.getContent();
+	        eventContent = getContents( request );
 	        if( (request.getResponseCode() / 100) != 2 ) {
 	        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + eventContent );
 	        }
@@ -78,6 +82,14 @@ public class SubscriptionRESTService {
         }
         log.info( "Response body: " + eventContent );
         return Response.ok().build();
+    }
+    
+    private String getContents( HttpURLConnection connection ) throws IOException {
+    	StringWriter writer = new StringWriter();
+    	InputStream in = connection.getInputStream();
+    	String encoding = connection.getContentEncoding();
+    	encoding = encoding == null ? "UTF-8" : encoding;
+    	return IOUtils.toString(in, encoding);
     }
     
     private OAuthConsumer getOAuthConsumer() {
