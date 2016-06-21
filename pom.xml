@@ -136,14 +136,6 @@
 					<groupId>javax.faces</groupId>
 					<artifactId>jsf-api</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		

@@ -19,14 +19,14 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
-  <div>Congratulations! You are currently logged in as: <b>#{identity.account.loginName}</b></div>
+  <div>Congratulations! You are currently logged in as: <b>#{identity.account.loginName}</b> and your email address is <b>#{identity.account.email}</b></div>
 
   <ui:fragment rendered="#{authorizationChecker.hasApplicationRole('admin')}">
     <div>You have been granted the 'admin' application role.</div>
   </ui:fragment>
   
   <h:form>
-      <h:commandButton id="logout" value="Log out" action="#{identity.logout}"/>
+      <h:commandButton id="logout" value="Log out" action="#{logoutController.logout}"/>
   </h:form>
 
 <br style="clear:both"/>

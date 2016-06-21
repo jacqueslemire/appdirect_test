@@ -1,8 +1,6 @@
 package com.fortiq.appdirect.challenge.webapp.security;
 
 import javax.ejb.Stateless;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ComponentSystemEvent;
@@ -11,9 +9,6 @@ import javax.inject.Named;
 
 import org.picketlink.Identity;
 import org.picketlink.Identity.AuthenticationResult;
-import org.picketlink.annotations.PicketLink;
-import org.picketlink.authentication.Authenticator;
-import org.picketlink.authentication.internal.IdmAuthenticator;
 
 @Stateless
 @Named
