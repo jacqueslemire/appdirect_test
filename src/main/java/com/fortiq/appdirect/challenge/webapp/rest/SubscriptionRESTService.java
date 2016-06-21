@@ -16,45 +16,73 @@
  */
 package com.fortiq.appdirect.challenge.webapp.rest;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.persistence.NoResultException;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
+
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthConsumer;
 
 /**
  * JAX-RS Example
  * <p/>
  * This class produces a RESTful service to read/write the contents of the members table.
  */
-@Path("/members")
+@Path("/subscription")
 @RequestScoped
-public class MemberResourceRESTService {
+public class SubscriptionRESTService {
 
     @Inject
     private Logger log;
-/*
+    
+    private OAuthConsumer consumer;
+    
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<Member> listAllMembers() {
-        return repository.findAllOrderedByName();
+    @Path("/create")
+    public Response create( @QueryParam("url") String urlStr ) {
+        log.info("create: " + urlStr);
+        try {
+        	/*
+        	Client client = ClientBuilder.newClient();
+        	WebTarget myResource = client.target(urlStr);
+        	myResource.request().
+        	*/
+        	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
+	        getOAuthConsumer().sign(request);
+	        request.connect();
+	        log.info( request.getHeaderFields() );
+	        if( (request.getResponseCode() / 100) != 2 ) {
+	        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + request.getResponseMessage() );
+	        }
+	        log.info( request.getResponseMessage() );
+        } catch( Exception e ) {
+        	log.error("Error retrieving the event: " + urlStr, e);
+        	return Response.status(500).entity("Error retrieving the event " + urlStr).build();
+        }
+        return Response.ok().build();
     }
+    
+    private OAuthConsumer getOAuthConsumer() {
+    	if( this.consumer == null ) {
+    		this.consumer = new DefaultOAuthConsumer("testapplication-122531", "5jIzxHVmYTPPNZDi"); // should be configurable obviously
+    	}
+        return this.consumer;
+    }
+    
+    
 
+    /*
     @GET
     @Path("/{id:[0-9][0-9]*}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -64,8 +92,8 @@ public class MemberResourceRESTService {
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
         return member;
-    }
-*/
+    }*/
+
     /**
      * Creates a new member from the values provided. Performs validation, and will return a JAX-RS response with either 200 ok,
      * or with a map of fields, and related errors.

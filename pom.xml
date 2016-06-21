@@ -138,7 +138,20 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>oauth.signpost</groupId>
+			<artifactId>signpost-core</artifactId>
+			<version>1.2</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>oauth.signpost</groupId>
+			<artifactId>signpost-commonshttp4</artifactId>
+			<version>1.2.1.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -179,28 +192,31 @@
 				</plugins>
 			</build>
 		</profile>
-	    <profile>
-	     <!-- When built in OpenShift the 'openshift' profile will be used when invoking mvn. -->
-	     <!-- Use this profile for any OpenShift specific customization your app will need. -->
-	     <!-- By default that is to put the resulting archive into the 'deployments' folder. -->
-	     <!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
-	     <id>openshift</id>
-	     <build>
-	        <finalName>adtestweb</finalName>
-	        <plugins>
-	          <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-war-plugin</artifactId>
-	                <version>2.3</version>
-	                <configuration>
-	                    <failOnMissingWebXml>false</failOnMissingWebXml>
-	                    <outputDirectory>deployments</outputDirectory>
-	              		  <warName>ROOT</warName>
-	                </configuration>
-	            </plugin>
-	        </plugins>
-	      </build>
-	    </profile>
+		<profile>
+			<!-- When built in OpenShift the 'openshift' profile will be used when 
+				invoking mvn. -->
+			<!-- Use this profile for any OpenShift specific customization your app 
+				will need. -->
+			<!-- By default that is to put the resulting archive into the 'deployments' 
+				folder. -->
+			<!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
+			<id>openshift</id>
+			<build>
+				<finalName>adtestweb</finalName>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>2.3</version>
+						<configuration>
+							<failOnMissingWebXml>false</failOnMissingWebXml>
+							<outputDirectory>deployments</outputDirectory>
+							<warName>ROOT</warName>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 
 </project>

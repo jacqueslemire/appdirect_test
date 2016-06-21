@@ -18,6 +18,8 @@ public class HttpSecurityConfiguration {
                             .loginPage("/login.xhtml")
                 .forPath("/javax.faces.resource/*")
                     .unprotected()
+                .forPath("/rest/*")
+                    .unprotected()
                 .forPath("/openIdLogin.xhtml")
                     .unprotected()
                 .forPath("/openIdLoginForm.xhtml")
