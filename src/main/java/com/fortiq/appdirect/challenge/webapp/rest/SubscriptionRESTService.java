@@ -61,6 +61,7 @@ public class SubscriptionRESTService {
         Object eventContent = null;
         try {
         	log.info( "params: " + httpRequest.getParameterMap() );
+        	log.info( "params: " + httpRequest.getHeaderNames() );
         	
         	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
 	        getOAuthConsumer().sign(request);
