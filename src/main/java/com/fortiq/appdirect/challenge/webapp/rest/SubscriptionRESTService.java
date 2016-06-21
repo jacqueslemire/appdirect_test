@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Enumeration;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -62,30 +63,42 @@ public class SubscriptionRESTService {
     @Path("/create")
     public Response create( @QueryParam("url") String urlStr ) {
         log.info("create: " + urlStr);
-        Object eventContent = null;
+        Object contents = null;
         try {
         	log.info( "params: " + httpRequest.getParameterMap() );
-        	log.info( "params: " + httpRequest.getHeaderNames() );
-        	
-        	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
-	        getOAuthConsumer().sign(request);
-	        request.connect();
-	        log.info( request.getHeaderFields() );
-	        eventContent = getContents( request );
-	        if( (request.getResponseCode() / 100) != 2 ) {
-	        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + eventContent );
-	        }
-	        log.info( request.getResponseMessage() );
+        	traceRequest();
+        	contents = getResponse( urlStr );
         } catch( Exception e ) {
         	log.error("Error retrieving the event: " + urlStr, e);
         	return Response.status(500).entity("Error retrieving the event " + urlStr).build();
         }
-        log.info( "Response body: " + eventContent );
+        log.info( "Response body: " + contents );
         return Response.ok().build();
     }
     
+    private void traceRequest() {
+    	Enumeration<String> headerNames = httpRequest.getHeaderNames();
+    	while (headerNames.hasMoreElements()) {
+    		String key = (String) headerNames.nextElement();
+    		String value = httpRequest.getHeader(key);
+    		log.info( key + ": " + value );
+    	}
+
+    }
+    
+    private String getResponse( String urlStr ) throws Exception {
+    	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
+        getOAuthConsumer().sign(request);
+        request.connect();
+        log.info( request.getHeaderFields() );
+        String content = getContents( request );
+        if( (request.getResponseCode() / 100) != 2 ) {
+        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + content );
+        }
+        return content;
+    }
+    
     private String getContents( HttpURLConnection connection ) throws IOException {
-    	StringWriter writer = new StringWriter();
     	InputStream in = connection.getInputStream();
     	String encoding = connection.getContentEncoding();
     	encoding = encoding == null ? "UTF-8" : encoding;
