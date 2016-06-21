@@ -21,16 +21,19 @@ import java.net.URL;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 
+import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 
@@ -43,6 +46,9 @@ import oauth.signpost.basic.DefaultOAuthConsumer;
 @RequestScoped
 public class SubscriptionRESTService {
 
+	@Context
+    private HttpServletRequest httpRequest;
+	
     @Inject
     private Logger log;
     
@@ -52,24 +58,24 @@ public class SubscriptionRESTService {
     @Path("/create")
     public Response create( @QueryParam("url") String urlStr ) {
         log.info("create: " + urlStr);
+        Object eventContent = null;
         try {
-        	/*
-        	Client client = ClientBuilder.newClient();
-        	WebTarget myResource = client.target(urlStr);
-        	myResource.request().
-        	*/
+        	log.info( "params: " + httpRequest.getParameterMap() );
+        	
         	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
 	        getOAuthConsumer().sign(request);
 	        request.connect();
 	        log.info( request.getHeaderFields() );
+	        eventContent = request.getContent();
 	        if( (request.getResponseCode() / 100) != 2 ) {
-	        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + request.getResponseMessage() );
+	        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + eventContent );
 	        }
 	        log.info( request.getResponseMessage() );
         } catch( Exception e ) {
         	log.error("Error retrieving the event: " + urlStr, e);
         	return Response.status(500).entity("Error retrieving the event " + urlStr).build();
         }
+        log.info( "Response body: " + eventContent );
         return Response.ok().build();
     }
     
