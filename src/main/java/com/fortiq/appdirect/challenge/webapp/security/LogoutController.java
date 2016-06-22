@@ -8,6 +8,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.deltaspike.core.api.config.ConfigProperty;
 import org.picketlink.Identity;
 import org.picketlink.idm.model.Attribute;
 import org.picketlink.idm.model.basic.User;
@@ -24,6 +25,10 @@ public class LogoutController {
 	@Inject
 	private Identity identity;
 	
+	@Inject
+    @ConfigProperty(name = "appdirect.logout.url")
+	private String adLogoutUrl;
+	
 	public String logout() throws IOException {
 		User user = (User)identity.getAccount();
 		String login = user.getLoginName();
@@ -31,7 +36,7 @@ public class LogoutController {
 		Boolean isOpenId = isAppDirect == null ? false : (Boolean)isAppDirect.getValue();
 		identity.logout();
 		if( isOpenId != null && isOpenId ) {
-			facesContext.getExternalContext().redirect("http://www.appdirect.com/applogout?openid=" + login); // Should be configurable obviously
+			facesContext.getExternalContext().redirect(adLogoutUrl + login);
 			return null;
 		}
 		return "loggedOut";

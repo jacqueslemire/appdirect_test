@@ -15,7 +15,7 @@ import javax.inject.Inject;
 import static org.picketlink.idm.model.basic.BasicModel.grantRole;
 
 /**
- * Sets up the base roles and credentials on application startup
+ * Sets up a few users and roles on application startup.
  */
 @Singleton
 @Startup

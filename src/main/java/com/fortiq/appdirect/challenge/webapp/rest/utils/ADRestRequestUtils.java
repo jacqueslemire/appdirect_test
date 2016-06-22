@@ -71,7 +71,5 @@ public class ADRestRequestUtils {
 		encoding = encoding == null ? "UTF-8" : encoding;
 		return IOUtils.toString(in, encoding);
 	}
-	
-	
 
 }

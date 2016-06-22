@@ -12,13 +12,6 @@ import javax.inject.Named;
 
 import static org.picketlink.idm.model.basic.BasicModel.*;
 
-/**
- * This is a utility bean that may be used by the view layer to determine whether the
- * current user has specific privileges. 
- * 
- * @author Shane Bryzak
- *
- */
 @Named 
 public class AuthorizationChecker {
     
