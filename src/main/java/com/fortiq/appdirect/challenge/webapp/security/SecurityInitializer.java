@@ -24,6 +24,8 @@ public class SecurityInitializer {
     @Inject
     private PartitionManager partitionManager;
 
+    @Inject IdentityServices identityServices;
+    
     @PostConstruct
     public void create() {
 
@@ -31,6 +33,7 @@ public class SecurityInitializer {
         jlemire.setEmail("jlemire@fortiq.com");
         jlemire.setFirstName("Jacques");
         jlemire.setLastName("Lemire");
+        identityServices.setUserOpenId(jlemire, "https://me.yahoo.com/a/UmyEKURkv9kzGjXYLXAQ1XoRPn5WhQ--#11436");
 
         IdentityManager identityManager = this.partitionManager.createIdentityManager();
 

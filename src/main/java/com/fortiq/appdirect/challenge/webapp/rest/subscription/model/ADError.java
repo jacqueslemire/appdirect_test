@@ -3,7 +3,7 @@ package com.fortiq.appdirect.challenge.webapp.rest.subscription.model;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement( name = "result" )
-public class ADOrderError {
+public class ADError {
 	
 	private Boolean success = false;
 	private String errorCode;

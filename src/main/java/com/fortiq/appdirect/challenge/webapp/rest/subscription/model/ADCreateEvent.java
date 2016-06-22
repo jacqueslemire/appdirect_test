@@ -3,13 +3,13 @@ package com.fortiq.appdirect.challenge.webapp.rest.subscription.model;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement( name = "event" )
-public class ADOrderEvent {
+public class ADCreateEvent {
 	
 	private String type;
 	private ADMarketPlace marketplace;
 	private String flag;
 	private ADCreator creator;
-	private ADPayload payload;
+	private ADCreatePayload payload;
 
 	public String getType() {
 		return type;
@@ -35,10 +35,10 @@ public class ADOrderEvent {
 	public void setCreator(ADCreator creator) {
 		this.creator = creator;
 	}
-	public ADPayload getPayload() {
+	public ADCreatePayload getPayload() {
 		return payload;
 	}
-	public void setPayload(ADPayload payload) {
+	public void setPayload(ADCreatePayload payload) {
 		this.payload = payload;
 	}
 

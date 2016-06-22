@@ -8,8 +8,6 @@ import org.apache.log4j.Logger;
 import org.brickred.socialauth.Profile;
 import org.brickred.socialauth.cdi.SocialAuth;
 import org.picketlink.authentication.BaseAuthenticator;
-import org.picketlink.idm.IdentityManager;
-import org.picketlink.idm.model.basic.BasicModel;
 import org.picketlink.idm.model.basic.User;
 
 import java.io.Serializable;
@@ -17,8 +15,6 @@ import java.io.Serializable;
 @Named
 @RequestScoped
 public class OpenIdAuthenticator extends BaseAuthenticator implements Serializable {
-
-	public static final String OPENID_USER_ATTRIBUTE = "OPENID_USER_ATTRIBUTE";
 
 	private static final long serialVersionUID = 1L;
 
@@ -29,7 +25,7 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 	SocialAuth socialauth;
 
     @Inject
-    private IdentityManager identityManager;
+    private IdentityServices identityServices;
 
 	private String openId;
 
@@ -54,21 +50,13 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 			setStatus(AuthenticationStatus.FAILURE);
 			return;
 		}
-		User user = getOrCreateUser( profile );
+		User user = identityServices.getUserForOpenId(profile.getValidatedId());
 		if( user == null ) {
 			setStatus(AuthenticationStatus.FAILURE);
 		} else {
 			setAccount( user );
 			setStatus(AuthenticationStatus.SUCCESS);
 		}
-	}
-
-	private User getOrCreateUser(Profile userProfile) {
-		User user = BasicModel.getUser(identityManager, userProfile.getValidatedId());
-		if( user == null ) {
-			return null;
-		}
-		return user;
 	}
 
 	public void redirect() {

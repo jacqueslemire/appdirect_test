@@ -1,6 +1,6 @@
 package com.fortiq.appdirect.challenge.webapp.rest.subscription.model;
 
-public class ADPayload {
+public class ADCreatePayload {
 
 	private ADCompany company;
 	private ADOrder order;

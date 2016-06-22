@@ -16,9 +16,6 @@
  */
 package com.fortiq.appdirect.challenge.webapp.rest;
 
-import java.io.StringReader;
-import java.util.Enumeration;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -28,17 +25,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.picketlink.idm.model.basic.User;
 
 import com.fortiq.appdirect.challenge.webapp.rest.subscription.SubscriptionServices;
-import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderError;
-import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderEvent;
-import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderSuccess;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADError;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADCancelEvent;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADCancelSuccess;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADCreateEvent;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADCreateSuccess;
+import com.fortiq.appdirect.challenge.webapp.rest.utils.ADException;
 import com.fortiq.appdirect.challenge.webapp.rest.utils.ADRestRequestUtils;
 
 /**
@@ -64,74 +61,67 @@ public class SubscriptionRESTService {
 	@Inject
 	private SubscriptionServices subscriptionServices;
 
-	private static final String SAMPLE_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><event xmlns:atom=\"http://www.w3.org/2005/Atom\"><type>SUBSCRIPTION_ORDER</type><marketplace><baseUrl>https://www.appdirect.com</baseUrl><partner>APPDIRECT</partner></marketplace><flag>DEVELOPMENT</flag><creator><email>jacques.lemire@gmail.com</email><firstName>Jacques</firstName><language>en</language><lastName>Lemire</lastName><openId>https://www.appdirect.com/openid/id/6583d099-f5a2-4a3e-aa29-559dc43fabe4</openId><uuid>6583d099-f5a2-4a3e-aa29-559dc43fabe4</uuid></creator><payload><company><country>US</country><name>Fortiq inc.</name><phoneNumber>514-604-0886</phoneNumber><uuid>3e76a881-a784-401e-88fd-655477dae0c0</uuid></company><configuration/><order><editionCode>free</editionCode><pricingDuration>MONTHLY</pricingDuration></order></payload></event>";
-
 	@GET
 	@Path("/create")
 	public Response create(@QueryParam("url") String urlStr) {
 		log.info("create: " + urlStr);
 		try {
 			return doCreate(urlStr);
+		} catch (ADException e) {
+			return createErrorResponse(e);
 		} catch (Exception e) {
 			return createErrorResponse("UNKNOWN_ERROR", "Unknown error");
 		}
 	}
 
-	private Response doCreate(String urlStr) {
-		String contents = null;
+	@GET
+	@Path("/cancel")
+	public Response cancel(@QueryParam("url") String urlStr) {
+		log.info("cancel: " + urlStr);
 		try {
-			contents = aDRestRequestUtils.getEventContents(urlStr);
-		} catch( Exception e ) {
-			log.error("Error retrieving the appdirect event", e);
-			return createErrorResponse("TRANSPORT_ERROR", "Error retrieving the appdirect event");
+			return doCancel(urlStr);
+		} catch (ADException e) {
+			return createErrorResponse(e);
+		} catch (Exception e) {
+			return createErrorResponse("UNKNOWN_ERROR", "Unknown error");
 		}
-		log.info("Response body: " + contents);
+	}
+	
+	private Response doCreate(String urlStr) throws ADException {
 		
-		ADOrderEvent event = null;
-		try {
-			event = parseOrderEvent(contents);
-		} catch (JAXBException jaxbe) {
-			log.error("Error parsing the event response", jaxbe);
-			return createErrorResponse("INVALID_RESPONSE", "Error parsing the event response");
-		}
+		ADCreateEvent event = aDRestRequestUtils.getEvent(ADCreateEvent.class, urlStr);
 		
-		User user = subscriptionServices.getUser(event);
+		User user = subscriptionServices.getUser(event.getCreator().getUuid());
 		if (user != null) {
 			return createErrorResponse("USER_ALREADY_EXISTS", "Account already exists: " + user.getLoginName());
 		}
 		user = subscriptionServices.createUser(event);
-		ADOrderSuccess success = new ADOrderSuccess();
+		ADCreateSuccess success = new ADCreateSuccess();
 		success.setAccountIdentifier(user.getLoginName());
 		return Response.ok().entity(success).build();
 	}
 
+	private Response doCancel(String urlStr) throws ADException {
+		ADCancelEvent event = aDRestRequestUtils.getEvent(ADCancelEvent.class, urlStr);
+		
+		User user = subscriptionServices.getUser(event.getPayload().getAccount().getAccountIdentifier());
+		if (user == null) {
+			return createErrorResponse("ACCOUNT_NOT_FOUND", "Account not found: " + event.getPayload().getAccount().getAccountIdentifier());
+		}
+		subscriptionServices.deleteUser(user);
+		ADCancelSuccess success = new ADCancelSuccess();
+		return Response.ok().entity(success).build();
+	}
+
+	private Response createErrorResponse(ADException e) {
+		return createErrorResponse(e.getErrorCode(), e.getMessage());
+	}	
+	
 	private Response createErrorResponse(String errorCode, String message) {
-		ADOrderError error = new ADOrderError();
+		ADError error = new ADError();
 		error.setErrorCode(errorCode);
 		error.setMessage(message);
 		return Response.ok().entity(error).build();
-	}
-
-	@SuppressWarnings("unused")
-	private void traceRequest() {
-		@SuppressWarnings("unchecked")
-		Enumeration<String> headerNames = httpRequest.getHeaderNames();
-		while (headerNames.hasMoreElements()) {
-			String key = (String) headerNames.nextElement();
-			String value = httpRequest.getHeader(key);
-			log.info(key + ": " + value);
-		}
-	}
-
-	@SuppressWarnings("unused")
-	private String getMockResponse() {
-		return SAMPLE_CONTENTS;
-	}
-
-	private ADOrderEvent parseOrderEvent(String xml) throws JAXBException {
-		JAXBContext context = JAXBContext.newInstance(ADOrderEvent.class);
-		Unmarshaller unmarshaller = context.createUnmarshaller();
-		return (ADOrderEvent) unmarshaller.unmarshal(new StringReader(xml));
 	}
 
 }
