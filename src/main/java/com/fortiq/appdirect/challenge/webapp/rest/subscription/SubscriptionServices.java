@@ -13,12 +13,11 @@ import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
 
 import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderEvent;
+import com.fortiq.appdirect.challenge.webapp.security.OpenIdAuthenticator;
 
 @Stateless
 public class SubscriptionServices {
 
-	public static final String OPENID_USER_ATTRIBUTE = "OPENID_USER_ATTRIBUTE";
-	
     @Inject
     private IdentityManager identityManager;
     
@@ -40,7 +39,7 @@ public class SubscriptionServices {
         identityManager.add(user);
         Role client = BasicModel.getRole(identityManager, "client");
         grantRole(relationshipManager, user, client);
-		user.setAttribute(new Attribute<Boolean>(OPENID_USER_ATTRIBUTE, Boolean.TRUE));
+		user.setAttribute(new Attribute<Boolean>(OpenIdAuthenticator.OPENID_USER_ATTRIBUTE, Boolean.TRUE));
         return user;
 	}
 	

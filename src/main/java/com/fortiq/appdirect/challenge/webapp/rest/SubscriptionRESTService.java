@@ -17,7 +17,6 @@
 package com.fortiq.appdirect.challenge.webapp.rest;
 
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Enumeration;
 
 import javax.enterprise.context.RequestScoped;
@@ -31,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
@@ -114,7 +112,9 @@ public class SubscriptionRESTService {
 		return Response.ok().entity(error).build();
 	}
 
+	@SuppressWarnings("unused")
 	private void traceRequest() {
+		@SuppressWarnings("unchecked")
 		Enumeration<String> headerNames = httpRequest.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			String key = (String) headerNames.nextElement();
@@ -123,6 +123,7 @@ public class SubscriptionRESTService {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private String getMockResponse() {
 		return SAMPLE_CONTENTS;
 	}

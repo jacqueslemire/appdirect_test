@@ -9,20 +9,16 @@ import org.brickred.socialauth.Profile;
 import org.brickred.socialauth.cdi.SocialAuth;
 import org.picketlink.authentication.BaseAuthenticator;
 import org.picketlink.idm.IdentityManager;
-import org.picketlink.idm.PartitionManager;
-import org.picketlink.idm.RelationshipManager;
-import org.picketlink.idm.model.Attribute;
 import org.picketlink.idm.model.basic.BasicModel;
-import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
-
-import static org.picketlink.idm.model.basic.BasicModel.grantRole;
 
 import java.io.Serializable;
 
 @Named
 @RequestScoped
 public class OpenIdAuthenticator extends BaseAuthenticator implements Serializable {
+
+	public static final String OPENID_USER_ATTRIBUTE = "OPENID_USER_ATTRIBUTE";
 
 	private static final long serialVersionUID = 1L;
 
