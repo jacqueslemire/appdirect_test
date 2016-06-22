@@ -24,8 +24,6 @@ import java.io.Serializable;
 @RequestScoped
 public class OpenIdAuthenticator extends BaseAuthenticator implements Serializable {
 
-	public static final String OPENID_USER_ATTRIBUTE = "TOTP_SECRET_USER_ATTRIBUTE";
-	
 	private static final long serialVersionUID = 1L;
 
 	@Inject
@@ -36,9 +34,6 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 
     @Inject
     private IdentityManager identityManager;
-    
-    @Inject
-    private RelationshipManager relationshipManager;
 
 	private String openId;
 
@@ -63,20 +58,20 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 			setStatus(AuthenticationStatus.FAILURE);
 			return;
 		}
-		setAccount( getOrCreateUser( profile ) );
-		setStatus(AuthenticationStatus.SUCCESS);
+		User user = getOrCreateUser( profile );
+		if( user == null ) {
+			setStatus(AuthenticationStatus.FAILURE);
+		} else {
+			setAccount( user );
+			setStatus(AuthenticationStatus.SUCCESS);
+		}
 	}
 
 	private User getOrCreateUser(Profile userProfile) {
 		User user = BasicModel.getUser(identityManager, userProfile.getValidatedId());
 		if( user == null ) {
-			user = new User( userProfile.getValidatedId() );
-			user.setEmail( userProfile.getEmail() );
-	        identityManager.add(user);
-	        Role client = BasicModel.getRole(identityManager, "client");
-	        grantRole(relationshipManager, user, client);
+			return null;
 		}
-		user.setAttribute(new Attribute<Boolean>(OPENID_USER_ATTRIBUTE, Boolean.TRUE));
 		return user;
 	}
 

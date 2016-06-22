@@ -3,6 +3,8 @@ package com.fortiq.appdirect.challenge.webapp.util;
 import org.apache.log4j.Logger;
 import org.picketlink.annotations.PicketLink;
 
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.basic.DefaultOAuthConsumer;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Produces;
@@ -49,4 +51,10 @@ public class Resources {
         return Logger.getLogger(injectionPoint.getMember().getDeclaringClass().getName());
     }
     
+    @Produces
+	private OAuthConsumer getOAuthConsumer() {
+		// should be configurable, obviously
+		return new DefaultOAuthConsumer("testapplication-122531", "5jIzxHVmYTPPNZDi");
+	}
+
 }

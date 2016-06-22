@@ -16,11 +16,8 @@
  */
 package com.fortiq.appdirect.challenge.webapp.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Enumeration;
 
 import javax.enterprise.context.RequestScoped;
@@ -28,174 +25,112 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.picketlink.idm.model.basic.User;
 
-import oauth.signpost.OAuth;
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.basic.DefaultOAuthConsumer;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.SubscriptionServices;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderError;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderEvent;
+import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADOrderSuccess;
+import com.fortiq.appdirect.challenge.webapp.rest.utils.ADRestRequestUtils;
 
 /**
  * JAX-RS Example
  * <p/>
- * This class produces a RESTful service to read/write the contents of the members table.
+ * This class produces a RESTful service to read/write the contents of the
+ * members table.
  */
 @Path("/subscription")
+@Produces("application/xml")
 @RequestScoped
 public class SubscriptionRESTService {
 
 	@Context
-    private HttpServletRequest httpRequest;
+	private HttpServletRequest httpRequest;
+
+	@Inject
+	private Logger log;
+
+	@Inject
+	ADRestRequestUtils aDRestRequestUtils;
 	
-    @Inject
-    private Logger log;
-    
-    private OAuthConsumer consumer;
-    
-    @GET
-    @Path("/create")
-    public Response create( @QueryParam("url") String urlStr ) {
-        log.info("create: " + urlStr);
-        Object contents = null;
-        try {
-        	log.info( "params: " + httpRequest.getParameterMap() );
-        	traceRequest();
-        	contents = getResponse( urlStr );
-        } catch( Exception e ) {
-        	log.error("Error retrieving the event: " + urlStr, e);
-        	return Response.status(500).entity("Error retrieving the event " + urlStr).build();
-        }
-        log.info( "Response body: " + contents );
-        return Response.ok().build();
-    }
-    
-    private void traceRequest() {
-    	Enumeration<String> headerNames = httpRequest.getHeaderNames();
-    	while (headerNames.hasMoreElements()) {
-    		String key = (String) headerNames.nextElement();
-    		String value = httpRequest.getHeader(key);
-    		log.info( key + ": " + value );
-    	}
+	@Inject
+	private SubscriptionServices subscriptionServices;
 
-    }
-    
-    private String getResponse( String urlStr ) throws Exception {
-    	HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
-        getOAuthConsumer().sign(request);
-        request.connect();
-        log.info( request.getHeaderFields() );
-        String content = getContents( request );
-        if( (request.getResponseCode() / 100) != 2 ) {
-        	throw new Exception( "Unexpected error code: " + request.getResponseCode() + "\n\t" + content );
-        }
-        return content;
-    }
-    
-    private String getContents( HttpURLConnection connection ) throws IOException {
-    	InputStream in = connection.getInputStream();
-    	String encoding = connection.getContentEncoding();
-    	encoding = encoding == null ? "UTF-8" : encoding;
-    	return IOUtils.toString(in, encoding);
-    }
-    
-    private OAuthConsumer getOAuthConsumer() {
-    	if( this.consumer == null ) {
-    		this.consumer = new DefaultOAuthConsumer("testapplication-122531", "5jIzxHVmYTPPNZDi"); // should be configurable obviously
-    	}
-        return this.consumer;
-    }
-    
-    
+	private static final String SAMPLE_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><event xmlns:atom=\"http://www.w3.org/2005/Atom\"><type>SUBSCRIPTION_ORDER</type><marketplace><baseUrl>https://www.appdirect.com</baseUrl><partner>APPDIRECT</partner></marketplace><flag>DEVELOPMENT</flag><creator><email>jacques.lemire@gmail.com</email><firstName>Jacques</firstName><language>en</language><lastName>Lemire</lastName><openId>https://www.appdirect.com/openid/id/6583d099-f5a2-4a3e-aa29-559dc43fabe4</openId><uuid>6583d099-f5a2-4a3e-aa29-559dc43fabe4</uuid></creator><payload><company><country>US</country><name>Fortiq inc.</name><phoneNumber>514-604-0886</phoneNumber><uuid>3e76a881-a784-401e-88fd-655477dae0c0</uuid></company><configuration/><order><editionCode>free</editionCode><pricingDuration>MONTHLY</pricingDuration></order></payload></event>";
 
-    /*
-    @GET
-    @Path("/{id:[0-9][0-9]*}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Member lookupMemberById(@PathParam("id") long id) {
-        Member member = repository.findById(id);
-        if (member == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        return member;
-    }*/
+	@GET
+	@Path("/create")
+	public Response create(@QueryParam("url") String urlStr) {
+		log.info("create: " + urlStr);
+		try {
+			return doCreate(urlStr);
+		} catch (Exception e) {
+			return createErrorResponse("UNKNOWN_ERROR", "Unknown error");
+		}
+	}
 
-    /**
-     * Creates a new member from the values provided. Performs validation, and will return a JAX-RS response with either 200 ok,
-     * or with a map of fields, and related errors.
-     *//*
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createMember(Member member) {
+	private Response doCreate(String urlStr) {
+		String contents = null;
+		try {
+			contents = aDRestRequestUtils.getEventContents(urlStr);
+		} catch( Exception e ) {
+			log.error("Error retrieving the appdirect event", e);
+			return createErrorResponse("TRANSPORT_ERROR", "Error retrieving the appdirect event");
+		}
+		log.info("Response body: " + contents);
+		
+		ADOrderEvent event = null;
+		try {
+			event = parseOrderEvent(contents);
+		} catch (JAXBException jaxbe) {
+			log.error("Error parsing the event response", jaxbe);
+			return createErrorResponse("INVALID_RESPONSE", "Error parsing the event response");
+		}
+		
+		User user = subscriptionServices.getUser(event);
+		if (user != null) {
+			return createErrorResponse("USER_ALREADY_EXISTS", "Account already exists: " + user.getLoginName());
+		}
+		user = subscriptionServices.createUser(event);
+		ADOrderSuccess success = new ADOrderSuccess();
+		success.setAccountIdentifier(user.getLoginName());
+		return Response.ok().entity(success).build();
+	}
 
-        Response.ResponseBuilder builder = null;
+	private Response createErrorResponse(String errorCode, String message) {
+		ADOrderError error = new ADOrderError();
+		error.setErrorCode(errorCode);
+		error.setMessage(message);
+		return Response.ok().entity(error).build();
+	}
 
-        try {
-            // Validates member using bean validation
-            validateMember(member);
+	private void traceRequest() {
+		Enumeration<String> headerNames = httpRequest.getHeaderNames();
+		while (headerNames.hasMoreElements()) {
+			String key = (String) headerNames.nextElement();
+			String value = httpRequest.getHeader(key);
+			log.info(key + ": " + value);
+		}
+	}
 
-            registration.register(member);
+	private String getMockResponse() {
+		return SAMPLE_CONTENTS;
+	}
 
-            // Create an "ok" response
-            builder = Response.ok();
-        } catch (ConstraintViolationException ce) {
-            // Handle bean validation issues
-            builder = createViolationResponse(ce.getConstraintViolations());
-        } catch (ValidationException e) {
-            // Handle the unique constrain violation
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("email", "Email taken");
-            builder = Response.status(Response.Status.CONFLICT).entity(responseObj);
-        } catch (Exception e) {
-            // Handle generic exceptions
-            Map<String, String> responseObj = new HashMap<>();
-            responseObj.put("error", e.getMessage());
-            builder = Response.status(Response.Status.BAD_REQUEST).entity(responseObj);
-        }
+	private ADOrderEvent parseOrderEvent(String xml) throws JAXBException {
+		JAXBContext context = JAXBContext.newInstance(ADOrderEvent.class);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
+		return (ADOrderEvent) unmarshaller.unmarshal(new StringReader(xml));
+	}
 
-        return builder.build();
-    }*/
-
-    /**
-     * Creates a JAX-RS "Bad Request" response including a map of all violation fields, and their message. This can then be used
-     * by clients to show violations.
-     *
-     * @param violations A set of violations that needs to be reported
-     * @return JAX-RS response containing all violations
-     *//*
-    private Response.ResponseBuilder createViolationResponse(Set<ConstraintViolation<?>> violations) {
-        log.fine("Validation completed. violations found: " + violations.size());
-
-        Map<String, String> responseObj = new HashMap<>();
-
-        for (ConstraintViolation<?> violation : violations) {
-            responseObj.put(violation.getPropertyPath().toString(), violation.getMessage());
-        }
-
-        return Response.status(Response.Status.BAD_REQUEST).entity(responseObj);
-    }*/
-
-    /**
-     * Checks if a member with the same email address is already registered. This is the only way to easily capture the
-     * "@UniqueConstraint(columnNames = "email")" constraint from the Member class.
-     *
-     * @param email The email to check
-     * @return True if the email already exists, and false otherwise
-     *//*
-    public boolean emailAlreadyExists(String email) {
-        Member member = null;
-        try {
-            member = repository.findByEmail(email);
-        } catch (NoResultException e) {
-            // ignore
-        }
-        return member != null;
-    }*/
 }
