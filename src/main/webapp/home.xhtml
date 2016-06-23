@@ -1,18 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml"
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:ui="http://java.sun.com/jsf/facelets">
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      template="/WEB-INF/templates/template.xhtml">
 
-  <div>Congratulations! You are currently logged in as: <b>#{identity.account.loginName}</b> and your email address is <b>#{identity.account.email}</b></div>
+	<ui:define name="title">Application home</ui:define>
+	
+	<ui:define name="content">
+	
+		<p>You are currently logged in as: <b>#{identity.account.loginName}</b> and your email address is <b>#{identity.account.email}</b></p>
 
-  <ui:fragment rendered="#{authorizationChecker.hasApplicationRole('admin')}">
-    <div>You have been granted the 'admin' application role.</div>
-  </ui:fragment>
-  
-  <h:form>
-      <h:commandButton id="logout" value="Log out" action="#{logoutController.logout}"/>
-  </h:form>
+		<ui:fragment rendered="#{authorizationChecker.hasApplicationRole('admin')}">
+		  <p>You have been granted the 'admin' application role.</p>
+		</ui:fragment>
+		
+	</ui:define>
 
-<br style="clear:both"/>
-
-</html>
+</ui:composition>

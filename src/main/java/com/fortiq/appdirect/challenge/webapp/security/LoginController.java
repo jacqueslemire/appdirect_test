@@ -24,7 +24,7 @@ public class LoginController {
 		if (AuthenticationResult.FAILED.equals(result)) {
 			facesContext.addMessage(null,
 					new FacesMessage("Authentication was unsuccessful. Please check your username and password."));
-			return "/error.xhtml";
+			return null;
 		}
 		return "loggedIn";
 	}

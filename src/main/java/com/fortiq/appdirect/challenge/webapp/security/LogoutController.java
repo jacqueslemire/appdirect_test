@@ -30,15 +30,20 @@ public class LogoutController {
 	private String adLogoutUrl;
 	
 	public String logout() throws IOException {
+		
 		User user = (User)identity.getAccount();
-		String login = user.getLoginName();
-		Attribute<Serializable> isAppDirect = user.getAttribute( SubscriptionServices.APPDIRECT_USER_ATTRIBUTE );
-		Boolean isOpenId = isAppDirect == null ? false : (Boolean)isAppDirect.getValue();
 		identity.logout();
-		if( isOpenId != null && isOpenId ) {
-			facesContext.getExternalContext().redirect(adLogoutUrl + login);
+		
+		// AppDirect users are redirected to a predefined url
+		if( isAppDirectUser( user ) ) {
+			facesContext.getExternalContext().redirect(adLogoutUrl + user.getLoginName());
 			return null;
 		}
 		return "loggedOut";
+	}
+	
+	private boolean isAppDirectUser( User user ) {
+		Attribute<Serializable> isAppDirect = user.getAttribute( SubscriptionServices.APPDIRECT_USER_ATTRIBUTE );
+		return isAppDirect == null ? false : (Boolean)isAppDirect.getValue();
 	}
 }

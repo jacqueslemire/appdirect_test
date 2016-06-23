@@ -1,5 +1,8 @@
 package com.fortiq.appdirect.challenge.webapp.rest.utils;
 
+/**
+ * Wraps the necessary information to produce the error response 
+ */
 public class ADException extends Exception {
 
 	private static final long serialVersionUID = 4092107660692374439L;

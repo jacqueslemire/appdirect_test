@@ -8,6 +8,11 @@ import org.picketlink.annotations.PicketLink;
 import org.picketlink.authentication.Authenticator;
 import org.picketlink.authentication.internal.IdmAuthenticator;
 
+import com.fortiq.appdirect.challenge.webapp.security.openid.OpenIdAuthenticator;
+
+/**
+ * Produces the appropriate Authenticator for Picketlink 
+ */
 public class AuthenticationProducer {
 
 	@Inject Instance<OpenIdAuthenticator> openIdAuthenticator;

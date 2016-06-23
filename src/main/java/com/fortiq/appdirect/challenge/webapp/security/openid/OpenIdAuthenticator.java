@@ -1,4 +1,4 @@
-package com.fortiq.appdirect.challenge.webapp.security;
+package com.fortiq.appdirect.challenge.webapp.security.openid;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -10,8 +10,14 @@ import org.brickred.socialauth.cdi.SocialAuth;
 import org.picketlink.authentication.BaseAuthenticator;
 import org.picketlink.idm.model.basic.User;
 
+import com.fortiq.appdirect.challenge.webapp.security.IdentityServices;
+
 import java.io.Serializable;
 
+/**
+ * Uses the SocialAuth CDI component to redirect to the OpenId producer and to validate the response.
+ * @see {@link <a href="https://docs.appdirect.com/developer/distribution/single-sign-on/openid-authentication">OpenID Authentication</a>} 
+ */
 @Named
 @RequestScoped
 public class OpenIdAuthenticator extends BaseAuthenticator implements Serializable {
@@ -40,6 +46,25 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 		}
 	}
 
+	/**
+	 * Redirects to the identity provider and returns a DEFERRED result.
+	 */
+	public void redirect() {
+		socialauth.init();
+		socialauth.setViewUrl("/openid/validate.xhtml");
+		socialauth.setId(openId);
+		try {
+			socialauth.login();
+		} catch (Exception e) {
+			logger.error("Error logging in through SocialAuth", e);
+			setStatus(AuthenticationStatus.FAILURE);
+		}
+		setStatus(AuthenticationStatus.DEFERRED);
+	}
+
+	/**
+	 * Validates the OpenID provider response and retrieves the user matching the profile
+	 */
 	public void connect() {
 		Profile profile = null; 
 		try {
@@ -57,19 +82,6 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 			setAccount( user );
 			setStatus(AuthenticationStatus.SUCCESS);
 		}
-	}
-
-	public void redirect() {
-		socialauth.init();
-		socialauth.setViewUrl("/openIdValidate.xhtml");
-		socialauth.setId(openId);
-		try {
-			socialauth.login();
-		} catch (Exception e) {
-			logger.error("Error logging in through SocialAuth", e);
-			setStatus(AuthenticationStatus.FAILURE);
-		}
-		setStatus(AuthenticationStatus.DEFERRED);
 	}
 
 	public String getOpenId() {

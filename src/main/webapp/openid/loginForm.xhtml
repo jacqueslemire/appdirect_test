@@ -10,7 +10,7 @@
 		<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<title>Please login</title>
+		<title>OpenId login</title>
 
 		<h:outputStylesheet library="webjars"
 			name="bootstrap/3.3.6/css/bootstrap.min-jsf.css" />
@@ -29,13 +29,11 @@
 
 			    <h:messages globalOnly="true"/>
 
-				<h2 class="form-signin-heading">Please sign in</h2>
-				<h:outputLabel for="name" value="Username" styleClass="sr-only" />
-				<h:inputText id="name" value="#{loginCredentials.userId}" styleClass="form-control" placeholder="Username" />
-				<h:outputLabel for="password" value="Password" styleClass="sr-only" />
-				<h:inputSecret id="password" value="#{loginCredentials.password}" styleClass="form-control"	redisplay="true" placeholder="Password" />
-				<h:commandLink styleClass="btn btn-lg btn-primary btn-block" value="Sign in" action="#{loginController.login}"/>
-				<h:link value="You can also login with you OpenId provider" outcome="/openid/loginForm.xhtml" />
+				<h2 class="form-signin-heading">OpenId Login</h2>
+				<h:outputLabel for="name" value="OpenId" styleClass="sr-only" />
+				<h:inputText id="name" value="#{openIdAuthenticator.openId}" styleClass="form-control" placeholder="OpenId" />
+				<h:commandLink styleClass="btn btn-lg btn-primary btn-block" value="Sign in" action="#{openIdLoginController.login}"/>
+
 			</h:form>
 		</div>
 

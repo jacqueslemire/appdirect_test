@@ -1,4 +1,4 @@
-package com.fortiq.appdirect.challenge.webapp.security;
+package com.fortiq.appdirect.challenge.webapp.security.config;
 
 import javax.enterprise.event.Observes;
 
@@ -20,11 +20,7 @@ public class HttpSecurityConfiguration {
                     .unprotected()
                 .forPath("/rest/*")
                     .unprotected()
-                .forPath("/openIdLogin.xhtml")
-                    .unprotected()
-                .forPath("/openIdLoginForm.xhtml")
-                    .unprotected()
-                .forPath("/openIdValidate.xhtml")
+                .forPath("/openid/*")
                     .unprotected();
     }
     

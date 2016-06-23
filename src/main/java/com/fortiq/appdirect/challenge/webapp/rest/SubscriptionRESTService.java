@@ -39,10 +39,7 @@ import com.fortiq.appdirect.challenge.webapp.rest.utils.ADException;
 import com.fortiq.appdirect.challenge.webapp.rest.utils.ADRestRequestUtils;
 
 /**
- * JAX-RS Example
- * <p/>
- * This class produces a RESTful service to read/write the contents of the
- * members table.
+ * JAX-RS AppDirect Subscription service
  */
 @Path("/subscription")
 @Produces("application/xml")
@@ -61,6 +58,10 @@ public class SubscriptionRESTService {
 	@Inject
 	private SubscriptionServices subscriptionServices;
 
+	/**
+	 * Implements the AppDirect Subscription Create API
+	 * @see {@link <a href="https://docs.appdirect.com/developer/distribution/event-notifications/subscription-events#create-subscription">Create Subscription</a>}
+	 */
 	@GET
 	@Path("/create")
 	public Response create(@QueryParam("url") String urlStr) {
@@ -74,6 +75,10 @@ public class SubscriptionRESTService {
 		}
 	}
 
+	/**
+	 * Implements the AppDirect Subscription Cancel API
+	 * @see {@link <a href="https://docs.appdirect.com/developer/distribution/event-notifications/subscription-events#cancel-subscription">Cancel Subscription</a>}
+	 */
 	@GET
 	@Path("/cancel")
 	public Response cancel(@QueryParam("url") String urlStr) {

@@ -20,10 +20,6 @@ public class IdentityServices {
 	@Inject
 	private IdentityManager identityManager;
 
-	public void setUserOpenId(User user, String openId) {
-		user.setAttribute(new Attribute<String>(OPENID_USER_ATTRIBUTE, openId));
-	}
-
 	public User getUserForOpenId(String openId) {
 		IdentityQueryBuilder queryBuilder = identityManager.getQueryBuilder();
 		IdentityQuery<User> query = queryBuilder.createIdentityQuery(User.class)
@@ -31,4 +27,9 @@ public class IdentityServices {
 		List<User> result = query.getResultList();		
 		return result.size() > 0 ? result.get(0) : null;
 	}
+	
+	public void setUserOpenId(User user, String openId) {
+		user.setAttribute(new Attribute<String>(OPENID_USER_ATTRIBUTE, openId));
+	}
+	
 }

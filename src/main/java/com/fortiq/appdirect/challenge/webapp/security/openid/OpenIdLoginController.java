@@ -1,4 +1,4 @@
-package com.fortiq.appdirect.challenge.webapp.security;
+package com.fortiq.appdirect.challenge.webapp.security.openid;
 
 import javax.ejb.Stateless;
 import javax.faces.application.FacesMessage;
@@ -27,7 +27,7 @@ public class OpenIdLoginController {
 		if (AuthenticationResult.FAILED.equals(result)) {
 			facesContext.addMessage(null,
 					new FacesMessage("Error authenticating with the openid provider"));
-			return "/error.xhtml";
+			return null;
 		}
 		return null;
 	}

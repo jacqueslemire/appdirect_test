@@ -12,6 +12,9 @@ import javax.inject.Named;
 
 import static org.picketlink.idm.model.basic.BasicModel.*;
 
+/**
+ * Utility class for authorization checks 
+ */
 @Named 
 public class AuthorizationChecker {
     

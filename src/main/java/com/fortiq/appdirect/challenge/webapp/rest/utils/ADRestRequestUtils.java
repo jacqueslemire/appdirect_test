@@ -26,6 +26,10 @@ public class ADRestRequestUtils {
 	@Inject
 	OAuthConsumer oAuthConsumer;
 
+	/**
+	 * Retrieves an event from AppDirect, applying the oauth 1.0 signature, and
+	 * unmarshalls it as an object of the specified class. 
+	 */
 	public <X> X getEvent( Class<X> clazz, String eventUrl ) throws ADException {
 		String contents = null;
 		try {
@@ -53,7 +57,7 @@ public class ADRestRequestUtils {
 		return (X) unmarshaller.unmarshal(new StringReader(xml));
 	}
 	
-	public String getEventContents(String urlStr) throws Exception {
+	private String getEventContents(String urlStr) throws Exception {
 		HttpURLConnection request = (HttpURLConnection) new URL(urlStr).openConnection();
 		oAuthConsumer.sign(request);
 		request.connect();

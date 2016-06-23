@@ -15,6 +15,9 @@ import org.picketlink.idm.model.basic.User;
 import com.fortiq.appdirect.challenge.webapp.rest.subscription.model.ADCreateEvent;
 import com.fortiq.appdirect.challenge.webapp.security.IdentityServices;
 
+/**
+ * Services that manage the local subscription objects for api calls. 
+ */
 @Stateless
 public class SubscriptionServices {
 
@@ -37,13 +40,17 @@ public class SubscriptionServices {
 	 * objects and associate those to the user, etc...
 	 **/
 	public User createUser( ADCreateEvent event ) {
+		
+		// Our product can only be bought and used by the subscription creator  
 		User user = new User( event.getCreator().getUuid() );
 		user.setFirstName( event.getCreator().getFirstName() );
 		user.setLastName( event.getCreator().getLastName() );
 		user.setEmail( event.getCreator().getEmail() );
         identityManager.add(user);
+        
         Role client = BasicModel.getRole(identityManager, "client");
         grantRole(relationshipManager, user, client);
+        
         identityServices.setUserOpenId(user, event.getCreator().getOpenId() );
 		user.setAttribute(new Attribute<Boolean>(APPDIRECT_USER_ATTRIBUTE, Boolean.TRUE));
         return user;
