@@ -75,6 +75,10 @@ public class OpenIdAuthenticator extends BaseAuthenticator implements Serializab
 			setStatus(AuthenticationStatus.FAILURE);
 			return;
 		}
+		if( profile == null ) {
+			setStatus(AuthenticationStatus.FAILURE);
+			return;
+		}
 		User user = identityServices.getUserForOpenId(profile.getValidatedId());
 		if( user == null ) {
 			setStatus(AuthenticationStatus.FAILURE);

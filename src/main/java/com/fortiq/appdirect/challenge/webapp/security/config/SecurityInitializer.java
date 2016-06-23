@@ -36,6 +36,7 @@ public class SecurityInitializer {
         jlemire.setFirstName("Jacques");
         jlemire.setLastName("Lemire");
         identityServices.setUserOpenId(jlemire, "https://me.yahoo.com/a/UmyEKURkv9kzGjXYLXAQ1XoRPn5WhQ--#11436");
+        //identityServices.setUserOpenId(jlemire, "https://www.appdirect.com/openid/id/6583d099-f5a2-4a3e-aa29-559dc43fabe4");
 
         IdentityManager identityManager = this.partitionManager.createIdentityManager();
 
