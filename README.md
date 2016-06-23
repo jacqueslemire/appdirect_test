@@ -15,11 +15,11 @@ I chose the following modules as my technology stack:
 
 ## Sample application
 
-Basing myself on the wildfly kitchensink application and the picketlink quickstart, i quickly developed a simple web application that does nothing, but onto which a user can login with username/password.
+Basing myself on the wildfly kitchensink application and the picketlink quickstart, i quickly developed a dummy web application that supports user login with username/password credentials. This application was then integrated as specified.
 
 ## How to run
 
-The application is defined by a pom and can be build and deployed through Apache Maven. 
+The application is defined by a pom and can be built and deployed using Apache Maven. 
 
 ### Prerequisites
 
